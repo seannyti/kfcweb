@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using Kfc.DataAccess.Data;
 using Kfc.DataAccess.Repository.IRepository;
 using Kfc.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KfcWeb.Areas.Admin.Controllers
 {
@@ -23,7 +24,16 @@ namespace KfcWeb.Areas.Admin.Controllers
 
         public IActionResult Create()
         {
-            return View();
+            IEnumerable<SelectListItem> CategoryList = _unitOfWork.Category
+                .GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+
+                });
+
+            ViewBag.CategoryList = CategoryList;
+               return View();
         }
 
         [HttpPost]
