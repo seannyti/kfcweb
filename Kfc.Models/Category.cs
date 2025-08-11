@@ -12,6 +12,7 @@ namespace Kfc.Models
         [MaxLength(30)]
         [DisplayName("Category Name")]
         public String Name { get; set; }
+
         [DisplayName("Display Order")]
         [Range(1,100)]
         public int DisplayOrder { get; set; }
