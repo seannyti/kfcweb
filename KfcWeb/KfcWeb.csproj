@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Kfc.Models\Kfc.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\product\" />
+  </ItemGroup>
+
 </Project>
