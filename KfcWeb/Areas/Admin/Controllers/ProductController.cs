@@ -119,7 +119,7 @@ namespace KfcWeb.Areas.Admin.Controllers
         public IActionResult Delete(int? id)
         {
             var productToBeDeleted = _unitOfWork.Product.Get(u => u.Id == id);
-            if (productToBeDeleted==null)
+            if (productToBeDeleted == null)
             {
                 return Json(new { success = false, message = "Error while deleting"});
             }
