@@ -3,10 +3,13 @@ using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using Kfc.DataAccess.Data;
 using Kfc.DataAccess.Repository.IRepository;
 using Kfc.Models;
+using Microsoft.AspNetCore.Authorization;
+using Kfc.Utility;
 
 namespace KfcWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Admin)]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

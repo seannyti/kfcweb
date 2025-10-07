@@ -1,14 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
-using Kfc.DataAccess.Data;
+﻿using Kfc.DataAccess.Data;
 using Kfc.DataAccess.Repository.IRepository;
 using Kfc.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Kfc.Models.ViewModels;
+using Kfc.Utility;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 
 namespace KfcWeb.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Admin)]
+
     public class ProductController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
