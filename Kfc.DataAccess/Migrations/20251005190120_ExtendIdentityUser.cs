@@ -43,7 +43,7 @@ namespace Kfc.DataAccess.Migrations
                 nullable: true);
 
             migrationBuilder.AddColumn<int>(
-                name: "name",
+                name: "Name",
                 table: "AspNetUsers",
                 type: "int",
                 nullable: true);
@@ -73,7 +73,7 @@ namespace Kfc.DataAccess.Migrations
                 table: "AspNetUsers");
 
             migrationBuilder.DropColumn(
-                name: "name",
+                name: "Name",
                 table: "AspNetUsers");
         }
     }
