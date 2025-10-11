@@ -11,6 +11,7 @@ namespace Kfc.Utility
     {
         public Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
+            // Logic to send Email
             // throw new NotImplementedException();
             return Task.CompletedTask;
         }
