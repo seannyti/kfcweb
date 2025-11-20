@@ -1,0 +1,55 @@
+services:
+  nginx:
+    build: ./nginx
+    container_name: kfcweb-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - users-api
+      - settings-api
+    restart: unless-stopped
+    networks:
+      - kfcweb-network
+
+  users-api:
+    build:
+      context: ./MyUsers.Api
+      dockerfile: Dockerfile
+    container_name: kfcweb-users-api
+    expose:
+      - "5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - DB_CONNECTION_STRING_USERS=${DB_CONNECTION_STRING_USERS}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - SettingsApiUrl=http://settings-api:5001
+    restart: unless-stopped
+    networks:
+      - kfcweb-network
+
+  settings-api:
+    build:
+      context: ./MySettings.Api
+      dockerfile: Dockerfile
+    container_name: kfcweb-settings-api
+    expose:
+      - "5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5001
+      - DB_CONNECTION_STRING_SETTINGS=${DB_CONNECTION_STRING_SETTINGS}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - UsersApiUrl=http://users-api:5000
+    restart: unless-stopped
+    networks:
+      - kfcweb-network
+
+networks:
+  kfcweb-network:
+    driver: bridge
