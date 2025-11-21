@@ -44,6 +44,8 @@ docker-compose.override.yml
 **/obj/
 **/dist/
 **/build/
+**/publish/
+publish/
 
 # Node modules
 **/node_modules/
