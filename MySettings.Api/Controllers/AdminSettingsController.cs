@@ -12,7 +12,7 @@ namespace MySettings.Api.Controllers;
 /// Admin settings controller for managing site configuration
 /// </summary>
 [ApiController]
-[Route("api/admin")]
+[Route("api/admin/settings")]
 [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.Admin}")]
 public class AdminSettingsController : ControllerBase
 {

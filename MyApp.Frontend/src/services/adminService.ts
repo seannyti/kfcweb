@@ -145,7 +145,7 @@ const adminService = {
   },
 
   async sendTestEmail(): Promise<void> {
-    await api.post('/admin/email/test')
+    await api.post('/admin/settings/email/test')
   },
 
   async getEmailHistory(): Promise<EmailLog[]> {
@@ -155,19 +155,19 @@ const adminService = {
 
   // Maintenance
   async toggleMaintenanceMode(enabled: boolean): Promise<void> {
-    await api.post('/admin/maintenance/toggle', { enabled })
+    await api.post('/admin/settings/maintenance/toggle', { enabled })
   },
 
   async clearCache(): Promise<void> {
-    await api.post('/admin/cache/clear')
+    await api.post('/admin/settings/cache/clear')
   },
 
   async optimizeDatabase(): Promise<void> {
-    await api.post('/admin/database/optimize')
+    await api.post('/admin/settings/database/optimize')
   },
 
   async checkUpdates(): Promise<any> {
-    const response = await api.get('/admin/system/updates')
+    const response = await api.get('/admin/settings/system/updates')
     return response.data
   },
 
@@ -256,7 +256,7 @@ const adminService = {
 
   // System Health (MySettings.Api - fake data)
   async getSystemHealth(): Promise<SystemHealth> {
-    const response = await api.get('/admin/system/health')
+    const response = await api.get('/admin/settings/system/health')
     return response.data
   },
 
@@ -268,27 +268,27 @@ const adminService = {
 
   // Dashboard
   async getDashboardStats(): Promise<DashboardStats> {
-    const response = await api.get('/admin/dashboard/stats')
+    const response = await api.get('/admin/settings/dashboard/stats')
     return response.data
   },
 
   async getRecentActions(): Promise<any[]> {
-    const response = await api.get('/admin/dashboard/recent-actions')
+    const response = await api.get('/admin/activity-logs')
     return response.data
   },
 
   // Theme
   async getTheme(): Promise<ThemeSettings> {
-    const response = await api.get('/admin/theme')
+    const response = await api.get('/admin/settings/theme')
     return response.data
   },
 
   async saveTheme(theme: ThemeSettings): Promise<void> {
-    await api.put('/admin/theme', theme)
+    await api.put('/admin/settings/theme', theme)
   },
 
   async resetTheme(): Promise<void> {
-    await api.post('/admin/theme/reset')
+    await api.post('/admin/settings/theme/reset')
   }
 }
 

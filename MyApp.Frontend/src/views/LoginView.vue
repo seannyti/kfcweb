@@ -117,14 +117,17 @@ const handleLogin = async () => {
     loading.value = true
     error.value = null
     
-    await authStore.login(email.value, password.value)
+    const success = await authStore.login(email.value, password.value)
     
-    showToast('Login successful! Welcome back.', 'success')
-    
-    // Redirect to dashboard or intended page
-    router.push('/dashboard')
+    if (success) {
+      showToast('Login successful! Welcome back.', 'success')
+      
+      // Redirect to dashboard or intended page
+      router.push('/dashboard')
+    }
   } catch (err: any) {
-    error.value = err.response?.data?.message || 'Login failed. Please check your credentials.'
+    error.value = err.response?.data?.message || 'Invalid email or password'
+    console.error('Login error:', err)
   } finally {
     loading.value = false
   }
