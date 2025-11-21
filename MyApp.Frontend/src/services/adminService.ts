@@ -126,22 +126,22 @@ const adminService = {
 
   // Site Settings (MySettings.Api)
   async getSettings(): Promise<SiteSettings> {
-    const response = await api.get('/admin/settings')
+    const response = await api.get('/admin/settings/settings')
     return response.data
   },
 
   async saveSettings(settings: Partial<SiteSettings>): Promise<void> {
-    await api.put('/admin/settings', settings)
+    await api.put('/admin/settings/settings', settings)
   },
 
   // Email
   async getEmailSettings(): Promise<Partial<SiteSettings>> {
-    const response = await api.get('/admin/settings')
+    const response = await api.get('/admin/settings/settings')
     return response.data
   },
 
   async saveEmailSettings(settings: Partial<SiteSettings>): Promise<void> {
-    await api.put('/admin/settings', settings)
+    await api.put('/admin/settings/settings', settings)
   },
 
   async sendTestEmail(): Promise<void> {
@@ -173,12 +173,12 @@ const adminService = {
 
   // Security Settings (MySettings.Api)
   async getSecuritySettings(): Promise<Partial<SiteSettings>> {
-    const response = await api.get('/admin/settings')
+    const response = await api.get('/admin/settings/settings')
     return response.data
   },
 
   async saveSecuritySettings(settings: Partial<SiteSettings>): Promise<void> {
-    await api.put('/admin/settings', settings)
+    await api.put('/admin/settings/settings', settings)
   },
 
   // User Management (MyUsers.Api)

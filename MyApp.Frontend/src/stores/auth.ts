@@ -19,10 +19,9 @@ export const useAuthStore = defineStore('auth', () => {
       error.value = null
       
       const response = await authApi.login({ email, password })
-      const data = response.data
       
       // Store user data only (token is in HTTP-only cookie)
-      user.value = data.user
+      user.value = response.data.user
       
       return true
     } catch (err: unknown) {
@@ -40,10 +39,9 @@ export const useAuthStore = defineStore('auth', () => {
       error.value = null
       
       const response = await authApi.register({ email, password, name })
-      const data = response.data
       
       // Store user data only (token is in HTTP-only cookie)
-      user.value = data.user
+      user.value = response.data.user
       
       return true
     } catch (err: unknown) {
