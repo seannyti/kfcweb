@@ -19,7 +19,7 @@ public class AuthController : ControllerBase
 
     public AuthController(IAuthService authService, ILogger<AuthController> logger, IWebHostEnvironment environment)
     {
-        _authService = authService;
+        _authService = authService; 
         _logger = logger;
         _environment = environment;
     }
@@ -151,7 +151,7 @@ public class AuthController : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = !_environment.IsDevelopment(), // Only require HTTPS in production
+            Secure = false, // Set to true when using HTTPS
             SameSite = SameSiteMode.Lax, // Lax allows cookies on top-level navigation (clicking links)
             Expires = DateTimeOffset.UtcNow.AddHours(1) // Match JWT expiry
         };
