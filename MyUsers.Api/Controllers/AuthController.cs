@@ -151,9 +151,9 @@ public class AuthController : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = false, // Set to true when using HTTPS
-            SameSite = SameSiteMode.Lax, // Lax allows cookies on top-level navigation (clicking links)
-            Expires = DateTimeOffset.UtcNow.AddHours(1) // Match JWT expiry
+            Secure = Request.IsHttps, // Auto-detect HTTPS
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddHours(1)
         };
         
         Response.Cookies.Append("jwt", token, cookieOptions);
