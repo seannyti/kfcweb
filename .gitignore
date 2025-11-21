@@ -2,12 +2,9 @@
 .env
 .env.local
 .env.development
-.env.production
-.env.*.local
 **/.env
 **/.env.local
 **/.env.development
-**/.env.production
 
 # Build outputs
 **/bin/
