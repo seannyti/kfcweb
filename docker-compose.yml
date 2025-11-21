@@ -1,6 +1,8 @@
 services:
   nginx:
-    build: ./nginx
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     container_name: kfcweb-nginx
     ports:
       - "80:80"
