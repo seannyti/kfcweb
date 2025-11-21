@@ -173,10 +173,8 @@ const handleRegister = async () => {
     
     await authStore.register(email.value, password.value, name.value)
     
-    showToast('Registration successful! Welcome to MyApp.', 'success')
-    
-    // Redirect to dashboard
-    router.push('/dashboard')
+    // Redirect to home page after successful registration
+    router.push('/')
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Registration failed. Please try again.'
   } finally {
