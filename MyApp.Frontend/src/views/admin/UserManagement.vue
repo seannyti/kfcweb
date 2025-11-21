@@ -303,19 +303,27 @@ const saveUser = async () => {
   try {
     saving.value = true
     
-    // Update name if SuperAdmin and name changed
     const originalUser = users.value.find(u => u.id === editingUser.value!.id)
+    let nameUpdated = false
+    let roleUpdated = false
+    let passwordReset = false
+    
+    // Update name if SuperAdmin and name changed
     if (authStore.user?.role === 'SuperAdmin' && originalUser && editingUser.value.name !== originalUser.name) {
       await api.put(`/admin/users/${editingUser.value.id}/name`, {
         name: editingUser.value.name
       })
+      nameUpdated = true
     }
     
-    // Update role
-    await api.put('/admin/users/role', {
-      userId: editingUser.value.id,
-      role: editingUser.value.role
-    })
+    // Update role only if it changed
+    if (originalUser && editingUser.value.role !== originalUser.role) {
+      await api.put('/admin/users/role', {
+        userId: editingUser.value.id,
+        role: editingUser.value.role
+      })
+      roleUpdated = true
+    }
     
     // Reset password if provided
     if (newPassword.value) {
@@ -323,9 +331,16 @@ const saveUser = async () => {
         userId: editingUser.value.id,
         newPassword: newPassword.value
       })
+      passwordReset = true
+    }
+    
+    // Show appropriate success message
+    if (passwordReset) {
       toast.success('User updated and password reset successfully')
-    } else {
+    } else if (nameUpdated || roleUpdated) {
       toast.success('User updated successfully')
+    } else {
+      toast.info('No changes were made')
     }
     
     showEditUserModal.value = false
