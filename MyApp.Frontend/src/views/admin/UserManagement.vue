@@ -138,7 +138,16 @@
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">User Name</label>
-              <input type="text" class="form-control" :value="editingUser?.name" disabled>
+              <input 
+                type="text" 
+                class="form-control" 
+                v-model="editingUser.name"
+                :disabled="authStore.user?.role !== 'SuperAdmin'"
+                placeholder="Enter user name"
+              >
+              <small class="text-muted" v-if="authStore.user?.role === 'SuperAdmin'">
+                You can edit the user's name as SuperAdmin
+              </small>
             </div>
             <div class="mb-3">
               <label class="form-label">Email</label>
@@ -294,6 +303,14 @@ const saveUser = async () => {
   try {
     saving.value = true
     
+    // Update name if SuperAdmin and name changed
+    const originalUser = users.value.find(u => u.id === editingUser.value!.id)
+    if (authStore.user?.role === 'SuperAdmin' && originalUser && editingUser.value.name !== originalUser.name) {
+      await api.put(`/admin/users/${editingUser.value.id}/name`, {
+        name: editingUser.value.name
+      })
+    }
+    
     // Update role
     await api.put('/admin/users/role', {
       userId: editingUser.value.id,
@@ -306,9 +323,9 @@ const saveUser = async () => {
         userId: editingUser.value.id,
         newPassword: newPassword.value
       })
-      toast.success('User role updated and password reset successfully')
+      toast.success('User updated and password reset successfully')
     } else {
-      toast.success('User role updated successfully')
+      toast.success('User updated successfully')
     }
     
     showEditUserModal.value = false

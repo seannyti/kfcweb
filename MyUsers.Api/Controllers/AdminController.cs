@@ -248,6 +248,57 @@ public class AdminController : ControllerBase
     }
 
     /// <summary>
+    /// Update user name (SuperAdmin only)
+    /// </summary>
+    [HttpPut("users/{userId}/name")]
+    [Authorize(Roles = Roles.SuperAdmin)]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UserDto>> UpdateUserName(int userId, [FromBody] UpdateNameRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return BadRequest(new { message = "Name is required" });
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var oldName = user.Name;
+        user.Name = request.Name.Trim();
+        await _context.SaveChangesAsync();
+
+        var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+        _logger.LogInformation("User {UserId} name updated from '{OldName}' to '{NewName}' by {AdminId}", 
+            user.Id, oldName, user.Name, currentUserId);
+
+        // Log activity
+        var adminName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "SuperAdmin";
+        await _activityLogger.LogAsync(
+            ActivityLogType.Admin,
+            "Updated user name",
+            currentUserId.ToString(),
+            adminName,
+            null,
+            $"Changed {oldName} to {user.Name} ({user.Email})"
+        );
+
+        return Ok(new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Name = user.Name,
+            Role = user.Role,
+            CreatedAt = user.CreatedAt,
+            LastLoginIp = user.LastLoginIp
+        });
+    }
+
+    /// <summary>
     /// Force password reset for a user (Admin and SuperAdmin only)
     /// </summary>
     [HttpPost("users/reset-password")]
@@ -386,6 +437,11 @@ public class UpdateRoleRequest
 {
     public int UserId { get; set; }
     public string Role { get; set; } = string.Empty;
+}
+
+public class UpdateNameRequest
+{
+    public string Name { get; set; } = string.Empty;
 }
 
 public class ForcePasswordResetRequest
