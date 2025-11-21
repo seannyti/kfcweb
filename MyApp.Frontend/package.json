@@ -10,7 +10,10 @@
     "lint": "echo 'No linter configured'"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "axios": "^1.7.9",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
     "pinia": "^2.3.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
