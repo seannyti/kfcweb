@@ -24,10 +24,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
-      - DB_CONNECTION_STRING_USERS=${DB_CONNECTION_STRING_USERS}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - JWT_ISSUER=${JWT_ISSUER}
-      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING_USERS}
+      - JwtSettings__SecretKey=${JWT_SECRET_KEY}
+      - JwtSettings__Issuer=${JWT_ISSUER}
+      - JwtSettings__Audience=${JWT_AUDIENCE}
       - SettingsApiUrl=http://settings-api:5001
     restart: unless-stopped
     networks:
@@ -43,10 +43,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5001
-      - DB_CONNECTION_STRING_SETTINGS=${DB_CONNECTION_STRING_SETTINGS}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - JWT_ISSUER=${JWT_ISSUER}
-      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING_SETTINGS}
+      - JwtSettings__SecretKey=${JWT_SECRET_KEY}
+      - JwtSettings__Issuer=${JWT_ISSUER}
+      - JwtSettings__Audience=${JWT_AUDIENCE}
       - UsersApiUrl=http://users-api:5000
     restart: unless-stopped
     networks:
