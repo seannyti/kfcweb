@@ -6,14 +6,38 @@
 **/.env.*
 !**/.env.example
 
-# Production environment files
+# Production environment files (contains API URLs)
 .env.production
+.env.development
+.env.local
 **/.env.production
+**/.env.development
+**/.env.local
 
 # Application settings with secrets
 **/appsettings.json
 **/appsettings.*.json
 !**/appsettings.Development.json.example
+
+# SSL certificates and keys
+**/ssl/
+**/*.key
+**/*.pem
+**/*.crt
+**/*.p12
+**/*.pfx
+nginx/ssl/
+
+# Docker secrets
+**/secrets/
+docker-compose.override.yml
+
+# Database connection files
+**/connectionStrings.json
+
+# JWT and API keys
+**/jwt.json
+**/apikeys.json
 
 # Build outputs
 **/bin/
