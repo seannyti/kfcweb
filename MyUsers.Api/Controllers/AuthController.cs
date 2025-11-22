@@ -144,6 +144,48 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Verify email address with token
+    /// </summary>
+    /// <param name="token">Verification token from email</param>
+    /// <returns>Success message</returns>
+    [HttpGet("verify-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> VerifyEmail([FromQuery] string token)
+    {
+        try
+        {
+            await _authService.VerifyEmailAsync(token);
+            return Ok(new { message = "Email verified successfully! You can now log in." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Resend verification email
+    /// </summary>
+    /// <param name="request">Email address to resend verification to</param>
+    /// <returns>Success message</returns>
+    [HttpPost("resend-verification")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
+    {
+        try
+        {
+            await _authService.ResendVerificationEmailAsync(request.Email);
+            return Ok(new { message = "Verification email sent! Please check your inbox." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Helper method to set JWT token in HTTP-only cookie
     /// </summary>
     private void SetTokenCookie(string token)

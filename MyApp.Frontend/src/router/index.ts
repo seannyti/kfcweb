@@ -44,6 +44,16 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
+      path: '/email-sent',
+      name: 'email-sent',
+      component: () => import('@/views/EmailSentView.vue')
+    },
+    {
+      path: '/verify-email',
+      name: 'verify-email',
+      component: () => import('@/views/VerifyEmailView.vue')
+    },
+    {
       path: '/dashboard',
       name: 'dashboard',
       component: () => import('@/views/DashboardView.vue'),

@@ -24,5 +24,12 @@ public class User
     public DateTime? LockoutEnd { get; set; }
     
     public string? LastLoginIp { get; set; }
+    
+    public bool EmailVerified { get; set; } = false;
+    
+    public string? VerificationToken { get; set; }
+    
+    public DateTime? VerificationTokenExpiry { get; set; }
 }
+
 

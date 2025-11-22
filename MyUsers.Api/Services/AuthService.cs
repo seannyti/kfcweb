@@ -18,19 +18,22 @@ public class AuthService : IAuthService
     private readonly ILogger<AuthService> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ISettingsClient _settingsClient;
+    private readonly IEmailService _emailService;
 
     public AuthService(
         AppDbContext context,
         ITokenService tokenService,
         ILogger<AuthService> logger,
         IHttpContextAccessor httpContextAccessor,
-        ISettingsClient settingsClient)
+        ISettingsClient settingsClient,
+        IEmailService emailService)
     {
         _context = context;
         _tokenService = tokenService;
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
         _settingsClient = settingsClient;
+        _emailService = emailService;
     }
 
     private async Task<SettingsDto> GetSettingsAsync()
@@ -128,7 +131,10 @@ public class AuthService : IAuthService
         // Hash password
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-        // Create user with default User role
+        // Generate verification token
+        var verificationToken = Guid.NewGuid().ToString("N");
+        
+        // Create user with default User role (unverified)
         var user = new User
         {
             Email = request.Email,
@@ -136,24 +142,31 @@ public class AuthService : IAuthService
             PasswordHash = passwordHash,
             Role = "User",
             CreatedAt = DateTime.UtcNow,
-            LastLoginIp = GetClientIpAddress()
+            LastLoginIp = GetClientIpAddress(),
+            EmailVerified = false,
+            VerificationToken = verificationToken,
+            VerificationTokenExpiry = DateTime.UtcNow.AddHours(24)
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("User registered successfully: {Email}", user.Email);
+        _logger.LogInformation("User registered successfully (unverified): {Email}", user.Email);
 
-        // Generate tokens
-        var token = _tokenService.GenerateAccessToken(user);
-        var refreshToken = _tokenService.GenerateRefreshToken();
-
-        return new AuthResponse
+        // Send verification email (non-blocking - don't fail registration if email fails)
+        try
         {
-            Token = token,
-            RefreshToken = refreshToken,
-            User = MapToUserDto(user)
-        };
+            await _emailService.SendVerificationEmailAsync(user.Email, user.Name, verificationToken);
+            _logger.LogInformation("Verification email sent to {Email}", user.Email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
+            // Continue - user is created, they can resend verification later
+        }
+
+        // Return success message without token (user must verify email first)
+        throw new InvalidOperationException("Registration successful! Please check your email to verify your account.");
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -177,6 +190,13 @@ public class AuthService : IAuthService
         {
             _logger.LogWarning("Login attempt for non-existent user: {Email}", request.Email);
             throw new UnauthorizedAccessException("Invalid email or password");
+        }
+
+        // Check if email is verified
+        if (!user.EmailVerified)
+        {
+            _logger.LogWarning("Login attempt for unverified user: {Email}", user.Email);
+            throw new UnauthorizedAccessException("Please verify your email address before logging in. Check your inbox for the verification link.");
         }
 
         // Check if account is locked
@@ -264,6 +284,84 @@ public class AuthService : IAuthService
         };
     }
 
+    public async Task VerifyEmailAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new InvalidOperationException("Verification token is required");
+        }
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.VerificationToken == token);
+
+        if (user == null)
+        {
+            throw new InvalidOperationException("Invalid or expired verification token");
+        }
+
+        // Check if already verified
+        if (user.EmailVerified)
+        {
+            throw new InvalidOperationException("Email is already verified");
+        }
+
+        // Check if token is expired
+        if (user.VerificationTokenExpiry.HasValue && user.VerificationTokenExpiry.Value < DateTime.UtcNow)
+        {
+            throw new InvalidOperationException("Verification token has expired. Please request a new one.");
+        }
+
+        // Verify email
+        user.EmailVerified = true;
+        user.VerificationToken = null;
+        user.VerificationTokenExpiry = null;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Email verified successfully for user: {Email}", user.Email);
+    }
+
+    public async Task ResendVerificationEmailAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new InvalidOperationException("Email address is required");
+        }
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+
+        // Check if already verified
+        if (user.EmailVerified)
+        {
+            throw new InvalidOperationException("Email is already verified");
+        }
+
+        // Generate new verification token
+        var verificationToken = Guid.NewGuid().ToString("N");
+        user.VerificationToken = verificationToken;
+        user.VerificationTokenExpiry = DateTime.UtcNow.AddHours(24);
+
+        await _context.SaveChangesAsync();
+
+        // Send verification email
+        try
+        {
+            await _emailService.SendVerificationEmailAsync(user.Email, user.Name, verificationToken);
+            _logger.LogInformation("Verification email resent to {Email}", user.Email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to resend verification email to {Email}", user.Email);
+            throw new InvalidOperationException("Failed to send verification email. Please try again later.");
+        }
+    }
+
     private static UserDto MapToUserDto(User user)
     {
         return new UserDto
@@ -276,4 +374,5 @@ public class AuthService : IAuthService
         };
     }
 }
+
 

@@ -173,10 +173,17 @@ const handleRegister = async () => {
     
     await authStore.register(email.value, password.value, name.value)
     
-    // Redirect to home page after successful registration
-    router.push('/')
+    // Redirect to email verification page after successful registration
+    router.push('/email-sent')
   } catch (err: any) {
+    // Show the error message from the API (which includes the verification message)
     error.value = err.response?.data?.message || 'Registration failed. Please try again.'
+    
+    // If the error message contains "check your email", it's actually a success
+    if (error.value.toLowerCase().includes('check your email') || 
+        error.value.toLowerCase().includes('verify your account')) {
+      router.push('/email-sent')
+    }
   } finally {
     loading.value = false
   }

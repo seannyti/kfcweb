@@ -132,7 +132,11 @@ builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddScoped<IBackupScheduler, BackupScheduler>();
 builder.Services.AddScoped<IApiKeyService, ApiKeyService>();
 builder.Services.AddScoped<ISystemHealthService, SystemHealthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHttpClient<ISettingsClient, SettingsClient>();
+
+// Email settings
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Add Hangfire services
 builder.Services.AddHangfire(configuration => configuration
