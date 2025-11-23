@@ -57,11 +57,13 @@
         <!-- Services Preview -->
         <div class="col-md-3">
           <h6 class="mb-3">Our Services</h6>
-          <ul class="list-unstyled text-white-50 small">
-            <li class="mb-1">Residential Construction</li>
-            <li class="mb-1">Commercial Construction</li>
-            <li class="mb-1">Renovations & Remodeling</li>
-            <li class="mb-1">Project Management</li>
+          <ul v-if="services.length > 0" class="list-unstyled text-white-50 small">
+            <li v-for="service in services.slice(0, 4)" :key="service.id" class="mb-1">
+              {{ service.title }}
+            </li>
+          </ul>
+          <ul v-else class="list-unstyled text-white-50 small">
+            <li class="mb-1">Professional Services</li>
           </ul>
         </div>
 
@@ -128,8 +130,18 @@ interface BusinessContent {
   twitterUrl: string
 }
 
+interface Service {
+  id: number
+  title: string
+  description: string
+  icon: string
+  displayOrder: number
+  isActive: boolean
+}
+
 const settingsStore = useSettingsStore()
 const businessContent = ref<BusinessContent | null>(null)
+const services = ref<Service[]>([])
 const currentYear = computed(() => new Date().getFullYear())
 
 const hasSocialLinks = computed(() => {
@@ -148,9 +160,19 @@ const loadBusinessContent = async () => {
   }
 }
 
+const loadServices = async () => {
+  try {
+    const response = await settingsApi.get('/Services')
+    services.value = response.data.filter((s: Service) => s.isActive)
+  } catch (error) {
+    console.error('Error loading services:', error)
+  }
+}
+
 onMounted(() => {
   settingsStore.loadSettings()
   loadBusinessContent()
+  loadServices()
 })
 </script>
 
