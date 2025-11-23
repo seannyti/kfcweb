@@ -43,7 +43,8 @@ public class AdminController : ControllerBase
                 Role = u.Role,
                 CreatedAt = u.CreatedAt,
                 LockoutEnd = u.LockoutEnd,
-                LastLoginIp = u.LastLoginIp
+                LastLoginIp = u.LastLoginIp,
+                EmailVerified = u.EmailVerified
             })
             .ToListAsync();
 
@@ -294,8 +295,50 @@ public class AdminController : ControllerBase
             Name = user.Name,
             Role = user.Role,
             CreatedAt = user.CreatedAt,
-            LastLoginIp = user.LastLoginIp
+            LastLoginIp = user.LastLoginIp,
+            EmailVerified = user.EmailVerified
         });
+    }
+
+    /// <summary>
+    /// Manually verify user's email (Admin and SuperAdmin only)
+    /// </summary>
+    [HttpPost("users/{userId}/verify-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> VerifyUserEmail(int userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        if (user.EmailVerified)
+        {
+            return Ok(new { message = "Email already verified" });
+        }
+
+        user.EmailVerified = true;
+        user.VerificationToken = null;
+        user.VerificationTokenExpiry = null;
+        await _context.SaveChangesAsync();
+
+        var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+        _logger.LogInformation("User {UserId} email manually verified by admin {AdminId}", userId, currentUserId);
+
+        // Log activity
+        var adminName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Admin";
+        await _activityLogger.LogAsync(
+            ActivityLogType.Admin,
+            "Manually verified user email",
+            currentUserId.ToString(),
+            adminName,
+            null,
+            $"Verified email for: {user.Name} ({user.Email})"
+        );
+
+        return Ok(new { message = "Email verified successfully" });
     }
 
     /// <summary>
@@ -397,7 +440,8 @@ public class AdminController : ControllerBase
                 Role = u.Role,
                 CreatedAt = u.CreatedAt,
                 LockoutEnd = u.LockoutEnd,
-                LastLoginIp = u.LastLoginIp
+                LastLoginIp = u.LastLoginIp,
+                EmailVerified = u.EmailVerified
             })
             .ToListAsync();
 

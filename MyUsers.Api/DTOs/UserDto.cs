@@ -18,5 +18,7 @@ public class UserDto
     public DateTime? LockoutEnd { get; set; }
     
     public string? LastLoginIp { get; set; }
+    
+    public bool EmailVerified { get; set; }
 }
 

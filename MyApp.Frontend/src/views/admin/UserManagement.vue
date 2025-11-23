@@ -52,7 +52,8 @@
                 <th>User</th>
                 <th>Email</th>
                 <th>Role</th>
-                <th>Status</th>
+                <th>Email Status</th>
+                <th>Account Status</th>
                 <th>Created</th>
                 <th>Actions</th>
               </tr>
@@ -86,6 +87,15 @@
                 <td>
                   <span 
                     class="badge"
+                    :class="user.emailVerified ? 'bg-success' : 'bg-warning'"
+                  >
+                    <i :class="user.emailVerified ? 'bi bi-check-circle-fill' : 'bi bi-exclamation-circle-fill'" class="me-1"></i>
+                    {{ user.emailVerified ? 'Verified' : 'Unverified' }}
+                  </span>
+                </td>
+                <td>
+                  <span 
+                    class="badge"
                     :class="isUserActive(user) ? 'bg-success' : 'bg-danger'"
                   >
                     {{ isUserActive(user) ? 'Active' : 'Locked' }}
@@ -102,6 +112,14 @@
                       title="Edit"
                     >
                       <i class="bi bi-pencil"></i>
+                    </button>
+                    <button 
+                      v-if="!user.emailVerified"
+                      class="btn btn-outline-success" 
+                      @click="verifyUserEmail(user)"
+                      title="Verify Email"
+                    >
+                      <i class="bi bi-check-circle"></i>
                     </button>
                     <button 
                       class="btn btn-outline-warning" 
@@ -371,6 +389,19 @@ const toggleUserStatus = async (user: any) => {
   } catch (error: any) {
     console.error('Failed to toggle user status:', error)
     toast.error(error.response?.data?.message || `Failed to ${action} user account`)
+  }
+}
+
+const verifyUserEmail = async (user: any) => {
+  if (!confirm(`Manually verify email for ${user.name} (${user.email})?`)) return
+  
+  try {
+    await api.post(`/admin/users/${user.id}/verify-email`)
+    toast.success('Email verified successfully')
+    await loadUsers()
+  } catch (error: any) {
+    console.error('Failed to verify email:', error)
+    toast.error(error.response?.data?.message || 'Failed to verify email')
   }
 }
 
