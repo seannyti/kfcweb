@@ -21,8 +21,9 @@ public class QuoteRequestDto
     [StringLength(20, ErrorMessage = "Phone must not exceed 20 characters")]
     public string Phone { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Address is required")]
     [StringLength(200, ErrorMessage = "Address must not exceed 200 characters")]
-    public string? Address { get; set; }
+    public string Address { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Project type is required")]
     [StringLength(100, ErrorMessage = "Project type must not exceed 100 characters")]

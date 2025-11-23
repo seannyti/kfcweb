@@ -151,16 +151,7 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Email</label>
-              <input 
-                type="email" 
-                class="form-control" 
-                v-model="editingUser.email"
-                :disabled="authStore.user?.role !== 'SuperAdmin'"
-                placeholder="Enter email address"
-              >
-              <small class="text-muted" v-if="authStore.user?.role === 'SuperAdmin'">
-                You can edit the user's email as SuperAdmin
-              </small>
+              <input type="email" class="form-control" :value="editingUser?.email" disabled>
             </div>
             <div class="mb-3">
               <label class="form-label">Last Login IP Address</label>
@@ -325,15 +316,11 @@ const saveUser = async () => {
       nameUpdated = true
     }
     
-    // Update role (and optionally name/email) if it changed
-    if (originalUser && (editingUser.value.role !== originalUser.role || 
-        editingUser.value.name !== originalUser.name ||
-        editingUser.value.email !== originalUser.email)) {
+    // Update role only if it changed
+    if (originalUser && editingUser.value.role !== originalUser.role) {
       await api.put('/admin/users/role', {
         userId: editingUser.value.id,
-        role: editingUser.value.role,
-        name: editingUser.value.name,
-        email: editingUser.value.email
+        role: editingUser.value.role
       })
       roleUpdated = true
     }

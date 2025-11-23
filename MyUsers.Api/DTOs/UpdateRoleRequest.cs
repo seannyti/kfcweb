@@ -12,10 +12,5 @@ public class UpdateRoleRequest
     
     [Required]
     public required string Role { get; set; }
-    
-    public string? Name { get; set; }
-    
-    [EmailAddress]
-    public string? Email { get; set; }
 }
 
