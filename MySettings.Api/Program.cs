@@ -62,6 +62,9 @@ var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException(
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Disable HTTPS metadata requirement since nginx handles SSL termination
+        options.RequireHttpsMetadata = false;
+        
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -176,7 +179,7 @@ else
     app.UseHsts();
 }
 
-// app.UseHttpsRedirection(); // Disabled - no SSL certificate yet
+app.UseHttpsRedirection();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
