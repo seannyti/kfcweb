@@ -86,7 +86,27 @@ public class AdminController : ControllerBase
             return BadRequest(new { message = "Cannot change your own role" });
         }
 
+        // Update role
         user.Role = request.Role;
+        
+        // Update name if provided and user is SuperAdmin
+        if (!string.IsNullOrWhiteSpace(request.Name) && User.IsInRole(Roles.SuperAdmin))
+        {
+            user.Name = request.Name;
+        }
+        
+        // Update email if provided and user is SuperAdmin
+        if (!string.IsNullOrWhiteSpace(request.Email) && User.IsInRole(Roles.SuperAdmin))
+        {
+            // Check if email is already in use by another user
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email && u.Id != user.Id);
+            if (existingUser != null)
+            {
+                return BadRequest(new { message = "Email is already in use by another user" });
+            }
+            user.Email = request.Email;
+        }
+        
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("User {UserId} role updated to {Role} by {AdminId}", 
