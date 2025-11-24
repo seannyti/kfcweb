@@ -9,18 +9,21 @@ namespace MyUsers.Api.Services;
 /// </summary>
 public class EmailService : IEmailService
 {
-    private readonly EmailSettings _emailSettings;
+    private readonly EmailSettings _fallbackSettings;
     private readonly ILogger<EmailService> _logger;
     private readonly IConfiguration _configuration;
+    private readonly ISettingsClient _settingsClient;
 
     public EmailService(
         IOptions<EmailSettings> emailSettings, 
         ILogger<EmailService> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ISettingsClient settingsClient)
     {
-        _emailSettings = emailSettings.Value;
+        _fallbackSettings = emailSettings.Value;
         _logger = logger;
         _configuration = configuration;
+        _settingsClient = settingsClient;
     }
 
     public async Task SendVerificationEmailAsync(string toEmail, string toName, string verificationToken)
@@ -115,7 +118,10 @@ public class EmailService : IEmailService
 
     private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
     {
-        if (!_emailSettings.Enabled)
+        // Get settings from database first, fall back to .env if needed
+        var settings = await GetEmailSettingsAsync();
+        
+        if (!settings.Enabled)
         {
             _logger.LogWarning("Email service is disabled. Would have sent email to {ToEmail}", toEmail);
             return;
@@ -123,15 +129,15 @@ public class EmailService : IEmailService
 
         try
         {
-            using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
+            using var smtpClient = new SmtpClient(settings.SmtpHost, settings.SmtpPort)
             {
-                Credentials = new NetworkCredential(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword),
-                EnableSsl = _emailSettings.UseSsl
+                Credentials = new NetworkCredential(settings.SmtpUsername, settings.SmtpPassword),
+                EnableSsl = settings.UseSsl
             };
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(_emailSettings.FromEmail, _emailSettings.FromName),
+                From = new MailAddress(settings.FromEmail, settings.FromName),
                 Subject = subject,
                 Body = htmlBody,
                 IsBodyHtml = true
@@ -147,6 +153,43 @@ public class EmailService : IEmailService
             _logger.LogError(ex, "Failed to send email to {ToEmail}", toEmail);
             throw new InvalidOperationException($"Failed to send email: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Gets email settings from database, falls back to .env configuration
+    /// </summary>
+    private async Task<EmailSettings> GetEmailSettingsAsync()
+    {
+        try
+        {
+            var dbSettings = await _settingsClient.GetSettingsAsync();
+            
+            // If database has valid email settings, use them
+            if (!string.IsNullOrWhiteSpace(dbSettings.SmtpServer) && 
+                !string.IsNullOrWhiteSpace(dbSettings.FromEmail))
+            {
+                _logger.LogInformation("Using email settings from database");
+                return new EmailSettings
+                {
+                    Enabled = dbSettings.EmailEnabled,
+                    SmtpHost = dbSettings.SmtpServer,
+                    SmtpPort = dbSettings.SmtpPort,
+                    SmtpUsername = dbSettings.SmtpUsername,
+                    SmtpPassword = dbSettings.SmtpPassword,
+                    FromEmail = dbSettings.FromEmail,
+                    FromName = dbSettings.FromName,
+                    UseSsl = dbSettings.UseSsl
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to load email settings from database, using fallback from .env");
+        }
+        
+        // Fall back to .env settings
+        _logger.LogInformation("Using fallback email settings from .env");
+        return _fallbackSettings;
     }
 }
 

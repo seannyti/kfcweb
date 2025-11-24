@@ -67,4 +67,14 @@ public class SettingsDto
     public bool RequireSpecialChars { get; set; } = true;
     public bool MaintenanceMode { get; set; } = false;
     public bool EnableApiAccess { get; set; } = true;
+    
+    // Email Settings
+    public bool EmailEnabled { get; set; } = true;
+    public string SmtpServer { get; set; } = string.Empty;
+    public int SmtpPort { get; set; } = 587;
+    public bool UseSsl { get; set; } = true;
+    public string SmtpUsername { get; set; } = string.Empty;
+    public string SmtpPassword { get; set; } = string.Empty;
+    public string FromEmail { get; set; } = string.Empty;
+    public string FromName { get; set; } = string.Empty;
 }
