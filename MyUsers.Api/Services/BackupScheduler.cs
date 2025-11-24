@@ -57,6 +57,15 @@ public class BackupScheduler : IBackupScheduler
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
+        // Clean up any duplicates first
+        var allSettings = await context.BackupSettings.ToListAsync();
+        if (allSettings.Count > 1)
+        {
+            _logger.LogWarning("Found {Count} BackupSettings rows, cleaning up duplicates", allSettings.Count);
+            context.BackupSettings.RemoveRange(allSettings.Skip(1));
+            await context.SaveChangesAsync();
+        }
+
         var settings = await context.BackupSettings.FirstOrDefaultAsync();
         if (settings == null)
         {

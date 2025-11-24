@@ -29,6 +29,20 @@ public class SettingsController : ControllerBase
     {
         try
         {
+            // Clean up any duplicates first
+            var allGeneral = await _context.GeneralSettings.ToListAsync();
+            if (allGeneral.Count > 1)
+            {
+                _context.GeneralSettings.RemoveRange(allGeneral.Skip(1));
+                await _context.SaveChangesAsync();
+            }
+            var allSite = await _context.SiteSettings.ToListAsync();
+            if (allSite.Count > 1)
+            {
+                _context.SiteSettings.RemoveRange(allSite.Skip(1));
+                await _context.SaveChangesAsync();
+            }
+
             var settings = await _context.GeneralSettings.FirstOrDefaultAsync();
             var siteSettings = await _context.SiteSettings.FirstOrDefaultAsync();
             
@@ -81,28 +95,48 @@ public class SettingsController : ControllerBase
         _logger.LogInformation("Received update request - SiteName: {SiteName}, Tagline: {Tagline}", 
             request.SiteName, request.Tagline);
 
+        // Delete all existing settings first to ensure only one row
+        var allSettings = await _context.GeneralSettings.ToListAsync();
+        if (allSettings.Count > 1)
+        {
+            _logger.LogWarning("Found {Count} GeneralSettings rows, cleaning up duplicates", allSettings.Count);
+            _context.GeneralSettings.RemoveRange(allSettings);
+            await _context.SaveChangesAsync();
+        }
+
         var settings = await _context.GeneralSettings.FirstOrDefaultAsync();
         if (settings == null)
         {
             _logger.LogInformation("No existing settings found, creating new record");
-            settings = new GeneralSettings();
+            settings = new GeneralSettings
+            {
+                SiteName = request.SiteName,
+                Tagline = request.Tagline,
+                Description = request.Description,
+                Logo = request.Logo,
+                Favicon = request.Favicon,
+                Timezone = request.Timezone,
+                DateFormat = request.DateFormat,
+                AllowRegistration = request.AllowRegistration,
+                ForceHttps = request.ForceHttps,
+                UpdatedAt = DateTime.UtcNow
+            };
             _context.GeneralSettings.Add(settings);
         }
         else
         {
             _logger.LogInformation("Updating existing settings with Id: {Id}", settings.Id);
+            settings.SiteName = request.SiteName;
+            settings.Tagline = request.Tagline;
+            settings.Description = request.Description;
+            settings.Logo = request.Logo;
+            settings.Favicon = request.Favicon;
+            settings.Timezone = request.Timezone;
+            settings.DateFormat = request.DateFormat;
+            settings.AllowRegistration = request.AllowRegistration;
+            settings.ForceHttps = request.ForceHttps;
+            settings.UpdatedAt = DateTime.UtcNow;
         }
-
-        settings.SiteName = request.SiteName;
-        settings.Tagline = request.Tagline;
-        settings.Description = request.Description;
-        settings.Logo = request.Logo;
-        settings.Favicon = request.Favicon;
-        settings.Timezone = request.Timezone;
-        settings.DateFormat = request.DateFormat;
-        settings.AllowRegistration = request.AllowRegistration;
-        settings.ForceHttps = request.ForceHttps;
-        settings.UpdatedAt = DateTime.UtcNow;
 
         var changeCount = await _context.SaveChangesAsync();
         _logger.LogInformation("General settings updated successfully. Changes saved: {ChangeCount}", changeCount);
@@ -121,6 +155,20 @@ public class SettingsController : ControllerBase
     {
         try
         {
+            // Clean up any duplicates first
+            var allGeneral = await _context.GeneralSettings.ToListAsync();
+            if (allGeneral.Count > 1)
+            {
+                _context.GeneralSettings.RemoveRange(allGeneral.Skip(1));
+                await _context.SaveChangesAsync();
+            }
+            var allSite = await _context.SiteSettings.ToListAsync();
+            if (allSite.Count > 1)
+            {
+                _context.SiteSettings.RemoveRange(allSite.Skip(1));
+                await _context.SaveChangesAsync();
+            }
+
             var generalSettings = await _context.GeneralSettings.FirstOrDefaultAsync();
             var siteSettings = await _context.SiteSettings.FirstOrDefaultAsync();
             

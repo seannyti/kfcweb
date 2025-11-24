@@ -40,6 +40,15 @@ public class AdminSettingsController : ControllerBase
     [ProducesResponseType(typeof(SiteSettingsDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<SiteSettingsDto>> GetSettings()
     {
+        // Clean up any duplicates first
+        var allSettings = await _context.SiteSettings.ToListAsync();
+        if (allSettings.Count > 1)
+        {
+            _logger.LogWarning("Found {Count} SiteSettings rows, cleaning up duplicates", allSettings.Count);
+            _context.SiteSettings.RemoveRange(allSettings.Skip(1));
+            await _context.SaveChangesAsync();
+        }
+
         var settings = await _context.SiteSettings.FirstOrDefaultAsync();
         
         if (settings == null)
@@ -62,6 +71,15 @@ public class AdminSettingsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SaveSettings([FromBody] SiteSettingsDto dto)
     {
+        // Delete duplicates first to ensure only one row
+        var allSettings = await _context.SiteSettings.ToListAsync();
+        if (allSettings.Count > 1)
+        {
+            _logger.LogWarning("Found {Count} SiteSettings rows, cleaning up duplicates", allSettings.Count);
+            _context.SiteSettings.RemoveRange(allSettings);
+            await _context.SaveChangesAsync();
+        }
+
         var settings = await _context.SiteSettings.FirstOrDefaultAsync();
         
         if (settings == null)
@@ -288,6 +306,14 @@ public class AdminSettingsController : ControllerBase
     [ProducesResponseType(typeof(ThemeSettingsDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<ThemeSettingsDto>> GetTheme()
     {
+        // Clean up any duplicates first
+        var allSettings = await _context.SiteSettings.ToListAsync();
+        if (allSettings.Count > 1)
+        {
+            _context.SiteSettings.RemoveRange(allSettings.Skip(1));
+            await _context.SaveChangesAsync();
+        }
+
         var settings = await _context.SiteSettings.FirstOrDefaultAsync();
         
         if (settings == null)
@@ -332,6 +358,14 @@ public class AdminSettingsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SaveTheme([FromBody] ThemeSettingsDto dto)
     {
+        // Clean up any duplicates first
+        var allSettings = await _context.SiteSettings.ToListAsync();
+        if (allSettings.Count > 1)
+        {
+            _context.SiteSettings.RemoveRange(allSettings.Skip(1));
+            await _context.SaveChangesAsync();
+        }
+
         var settings = await _context.SiteSettings.FirstOrDefaultAsync();
         
         if (settings == null)
